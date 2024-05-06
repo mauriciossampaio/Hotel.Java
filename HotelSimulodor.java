@@ -180,9 +180,9 @@ class Recepcionista extends Thread {
 public class HotelSimulador {
     public static void main(String[] args) {
         int numQuartos = 10;
-        int numCamareiras = 5;
-        int numRecepcionistas = 3;
-        int numHospedes = 20;
+        int numCamareiras = 10;
+        int numRecepcionistas = 5;
+        int numHospedes = 50;
 
         BlockingQueue<Quarto> quartosDisponiveis = new ArrayBlockingQueue<>(numQuartos);
         BlockingQueue<Hospede> filaDeEspera = new ArrayBlockingQueue<>(numHospedes);
