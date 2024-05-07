@@ -1,14 +1,17 @@
 package Classes;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.Lock;
 
 class Hospede extends Thread {
     private int id;
     private Quarto quarto;
-
-    public Hospede(int id, Quarto quarto) {
+    private Lock locke;
+    public Hospede(int id, Quarto quarto, Lock locke) {
         this.id = id;
         this.quarto = quarto;
+        this.locke = locke;
     }
     public void setQuarto(Quarto quarto) {
         this.quarto = quarto;
@@ -19,52 +22,50 @@ class Hospede extends Thread {
     public void run() {
         while (true) {
             passear();
+
             fazerCheckIn();
             ficarNoQuarto();
-            quarto.checkOut(this);
+
             if (ThreadLocalRandom.current().nextBoolean()) {
                 passear();
-            } else {
-                break;
             }
+            quarto.checkOut(this);
+            System.out.println("chekout");
+
         }
     }
 
     private void passear() {
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 5000));
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void fazerCheckIn() {
+    private synchronized void fazerCheckIn() {
         boolean checkInFeito = false;
         while (!checkInFeito) {
-            try {
-                Thread.sleep(ThreadLocalRandom.current().nextInt(500, 2000));
                 if (quarto != null){
-                    if (quarto.isChaveNaRecepcao()) {
-                        synchronized (quarto) {
-                            if (quarto.isChaveNaRecepcao()) {
-                                checkInFeito = quarto.checkIn(this);
+
+                        if (quarto.isChaveNaRecepcao()) {
+                            synchronized (quarto) {
+
+                                checkInFeito = quarto.getChekin(this);
+
                                 if (checkInFeito) {
-                                    quarto.setChaveNaRecepcao(false);
-                                    System.out.println("Hóspede " + id + " fez check-in no quarto " + quarto.getNumero()+"\n\t\t\t");
-                                }
+                                        System.out.println("Hóspede " + id + " fez check-in no quarto " + quarto.getNumero()+"\n\t\t\t");
+                                    }
                             }
                         }
-                    }
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
         }
     }
 
     private void ficarNoQuarto() {
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(2000, 5000));
+            Thread.sleep(ThreadLocalRandom.current().nextInt(500, 1000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

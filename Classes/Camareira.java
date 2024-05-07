@@ -1,36 +1,45 @@
 package Classes;
 
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
 
 class Camareira extends Thread {
     private int id;
-    private BlockingQueue<Quarto> quartosParaLimpar;
+    private Queue<Quarto> quartosParaLimpar;
 
-    public Camareira(int id, BlockingQueue<Quarto> quartosParaLimpar) {
+    public Camareira(int id, Queue<Quarto> quartosParaLimpar) {
         this.id = id;
         this.quartosParaLimpar = quartosParaLimpar;
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         while (true) {
             try {
-                Quarto quarto = quartosParaLimpar.take();
-                limparQuarto(quarto);
-            } catch (InterruptedException e) {
+                Thread.sleep(1);
+                if (quartosParaLimpar.peek() != null && quartosParaLimpar.peek().isChaveNaRecepcao() && !quartosParaLimpar.peek().isFoiLimpo()) {
+                    Quarto quarto = quartosParaLimpar.poll();
+                    limparQuarto(quarto);
+                }
+            }catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
         }
     }
 
     private void limparQuarto(Quarto quarto) {
+        quarto.setChaveNaRecepcao(false);
         System.out.println("Camareira " + id + " está limpando quarto " + quarto.getNumero()+"\n\t");
         try {
-            Thread.sleep(ThreadLocalRandom.current().nextInt(1000, 3000));
+            Thread.sleep(5000);
+            quartosParaLimpar.offer(quarto);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        quarto.setFoiLimpo(true);
+        quarto.setChaveNaRecepcao(true);
         System.out.println("Camareira " + id + " terminou de limpar quarto " + quarto.getNumero()+"\n\t");
     }
 
